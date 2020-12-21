@@ -19,11 +19,11 @@ struct Jump {
 
 #[derive(Clone, FromStr, PartialEq, Debug)]
 pub enum Instruction {
-    #[from_str(regex = r"acc \+?(?P<0>-?[0-9]+)")]
+    #[from_str(regex = r"acc (?P<0>[-+][0-9]+)")]
     Acc(i32),
-    #[from_str(regex = r"jmp \+?(?P<0>-?[0-9]+)")]
+    #[from_str(regex = r"jmp (?P<0>[-+][0-9]+)")]
     Jump(i32),
-    #[from_str(regex = r"nop \+?(?P<0>-?[0-9]+)")]
+    #[from_str(regex = r"nop (?P<0>[-+][0-9]+)")]
     Noop(i32),
 }
 
