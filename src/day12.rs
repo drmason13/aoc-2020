@@ -155,7 +155,7 @@ struct Ship {
 }
 
 impl Ship {
-    fn new(position: CompassCoord, direction: Direction) -> Self {
+    fn _new(position: CompassCoord, direction: Direction) -> Self {
         Ship { position, direction }
     }
 

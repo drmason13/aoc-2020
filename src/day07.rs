@@ -26,15 +26,6 @@ impl BagGraph {
         &self.graph
     }
 
-    /// count the weight (count) of edges (colors) from a particular node (color)
-    pub fn count_contents(&self, color: &str) -> usize {
-        let idx = self.lookup_node_index(color).unwrap();
-        self.graph
-            .edges_directed(idx, petgraph::Direction::Outgoing)
-            .map(|e| e.weight())
-            .sum::<usize>()
-    }
-
     /// Makes no change if the bag is already in the graph
     /// Adds a bag to the graph and records its index
     /// Always returns the NodeIndex of the bag
@@ -120,10 +111,9 @@ pub fn part2(graph: &BagGraph) -> usize {
     let mut counts: HashMap<NodeIndex, usize> = HashMap::new();
 
     // Depth first search where we need to track all the weights as we come up and multiply them together
-    // each bag will add its "weight" plus its weight multiplied by its total contents, which can be calculated recursively
+    // each bag will add its "count" plus its count multiplied by its total contents
     while let Some(idx) = dfs.next(graph_ref) {
         for e in graph_ref.edges_directed(idx, petgraph::Direction::Outgoing) {
-            dbg!(&e);
             //     outer (source)
             //    /
             //   / e
@@ -132,15 +122,18 @@ pub fn part2(graph: &BagGraph) -> usize {
             let count = counts.entry(e.source()).or_insert(0);
             *count += e.weight();
 
+            // dbg!(&graph.graph()[e.source()]);
+            // dbg!(&graph.graph()[e.target()]);
+
             if let Some(multiplier) = counts.get(&e.target()).cloned() {
                 let count = counts.entry(e.source()).or_insert(0);
-                *count += *count * multiplier;
+                *count += e.weight() * multiplier;
             }
 
-            dbg!(&counts
-                .iter()
-                .map(|(idx, count)| (graph.graph()[*idx].clone(), count))
-                .collect::<HashMap<_, _>>());
+            // dbg!(&counts
+                // .iter()
+                // .map(|(idx, count)| (graph.graph()[*idx].clone(), count))
+                // .collect::<HashMap<_, _>>());
         }
     }
     *counts.get(&idx).unwrap()
@@ -170,6 +163,14 @@ dark green bags contain 2 dark blue bags.
 dark blue bags contain 2 dark violet bags.
 dark violet bags contain no other bags.";
 
+const d: &'static str = "\
+shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
+dark olive bags contain 3 faded blue bags, 4 dotted black bags.
+vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+faded blue bags contain no other bags.
+dotted black bags contain no other bags.";
+
+
     #[test]
     fn part1_works() {
         assert_eq!(4, part1(&input_generator(TEST_INPUT_1)));
@@ -178,5 +179,7 @@ dark violet bags contain no other bags.";
     #[test]
     fn part2_works() {
         assert_eq!(126, part2(&input_generator(TEST_INPUT_2)));
+        
+        assert_eq!(32, part2(&input_generator(TEST_INPUT_1)));
     }
 }
