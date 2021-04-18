@@ -1,4 +1,4 @@
-use aoc_runner_derive::{aoc_generator, aoc};
+use aoc_runner_derive::{aoc, aoc_generator};
 
 use std::str::FromStr;
 
@@ -24,25 +24,39 @@ impl FromStr for Seat {
         let mut column = 0;
         let mut error = None;
         let (row_partition, col_partition) = input.split_at(row_partition_len);
-        
-        row_partition.chars().enumerate().for_each(|(i, c)| match c {
-            'F' => {}, // Front / Lower half
-            'B' => { row += 2_usize.pow(6 - i as u32); }, // Back / Upper Half
-            _ => { error = Some("Invalid character in row partition"); },
-        });
-        
+
+        row_partition
+            .chars()
+            .enumerate()
+            .for_each(|(i, c)| match c {
+                'F' => {} // Front / Lower half
+                'B' => {
+                    row += 2_usize.pow(6 - i as u32);
+                } // Back / Upper Half
+                _ => {
+                    error = Some("Invalid character in row partition");
+                }
+            });
+
         if let Some(error) = error {
-            return Err(error)
+            return Err(error);
         }
-        
-        col_partition.chars().enumerate().for_each(|(i, c)| match c {
-            'L' => {}, // Left / Lower Half
-            'R' => { column += 2_usize.pow(2 - i as u32); }, // Back / Upper Half
-            _ => { error = Some("Invalid character in row partition"); },
-        });
-        
+
+        col_partition
+            .chars()
+            .enumerate()
+            .for_each(|(i, c)| match c {
+                'L' => {} // Left / Lower Half
+                'R' => {
+                    column += 2_usize.pow(2 - i as u32);
+                } // Back / Upper Half
+                _ => {
+                    error = Some("Invalid character in row partition");
+                }
+            });
+
         if let Some(error) = error {
-            return Err(error)
+            return Err(error);
         }
 
         Ok(Seat { row, column })
@@ -52,7 +66,10 @@ impl FromStr for Seat {
 #[aoc_generator(day5)]
 pub fn input_generator(input: &str) -> Vec<Seat> {
     // WARNING: any invalid "Seat" input is simply ignored
-    input.lines().filter_map(|line| line.parse::<Seat>().ok()).collect()
+    input
+        .lines()
+        .filter_map(|line| line.parse::<Seat>().ok())
+        .collect()
 }
 
 #[aoc(day5, part1)]
@@ -65,18 +82,23 @@ pub fn part2(list: &Vec<Seat>) -> usize {
     let mut seat_ids = list.iter().map(|seat| seat.id()).collect::<Vec<_>>();
     seat_ids.sort_unstable();
 
-    seat_ids.as_slice().windows(3).filter_map(|w| {
-        let a = w[0];
-        let b = w[1];
-        let c = w[2];
-        if b != a + 1 {
-            Some(a + 1)
-        } else if c != b + 1 {
-            Some(b + 1)
-        } else {
-            None
-        }
-    }).next().expect("the missing id should be ours")
+    seat_ids
+        .as_slice()
+        .windows(3)
+        .filter_map(|w| {
+            let a = w[0];
+            let b = w[1];
+            let c = w[2];
+            if b != a + 1 {
+                Some(a + 1)
+            } else if c != b + 1 {
+                Some(b + 1)
+            } else {
+                None
+            }
+        })
+        .next()
+        .expect("the missing id should be ours")
 }
 
 #[cfg(test)]
@@ -90,11 +112,7 @@ BBFFBBFRLL";
 
     #[test]
     fn seat_parsing_works() {
-        let expected = &[
-            (70, 7, 567),
-            (14, 7, 119),
-            (102, 4, 820),
-        ];
+        let expected = &[(70, 7, 567), (14, 7, 119), (102, 4, 820)];
 
         for (i, seat) in input_generator(EXAMPLE_SEATS).iter().enumerate() {
             assert_eq!(expected[i].0, seat.row);

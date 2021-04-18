@@ -28,13 +28,7 @@ pub fn part2(input: &str) -> usize {
     let map = input.lines().collect();
 
     let mut answer = 1;
-    for slope in &[
-        (1, 1),
-        (3, 1),
-        (5, 1),
-        (7, 1),
-        (1, 2),
-    ] {
+    for slope in &[(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)] {
         answer *= check_slope(*slope, &map);
     }
     answer

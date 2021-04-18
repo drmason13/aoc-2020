@@ -1,20 +1,20 @@
-use aoc_runner_derive::{aoc_generator, aoc};
+use aoc_runner_derive::{aoc, aoc_generator};
 
-use std::str::FromStr;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 #[derive(Clone, Debug)]
 pub struct Passport(HashMap<PassportField, String>);
 
 impl Passport {
     fn validate(&self) -> bool {
-        self.0.get(&PassportField::Byr).is_some() &&
-        self.0.get(&PassportField::Iyr).is_some() &&
-        self.0.get(&PassportField::Eyr).is_some() &&
-        self.0.get(&PassportField::Hgt).is_some() &&
-        self.0.get(&PassportField::Hcl).is_some() &&
-        self.0.get(&PassportField::Ecl).is_some() &&
-        self.0.get(&PassportField::Pid).is_some()
+        self.0.get(&PassportField::Byr).is_some()
+            && self.0.get(&PassportField::Iyr).is_some()
+            && self.0.get(&PassportField::Eyr).is_some()
+            && self.0.get(&PassportField::Hgt).is_some()
+            && self.0.get(&PassportField::Hcl).is_some()
+            && self.0.get(&PassportField::Ecl).is_some()
+            && self.0.get(&PassportField::Pid).is_some()
     }
 }
 
@@ -43,7 +43,7 @@ impl FromStr for PassportField {
             "ecl" => Ok(PassportField::Ecl),
             "pid" => Ok(PassportField::Pid),
             "cid" => Ok(PassportField::Cid),
-            _ => Err("Invalid Passport field")
+            _ => Err("Invalid Passport field"),
         }
     }
 }
@@ -51,53 +51,63 @@ impl FromStr for PassportField {
 impl PassportField {
     fn validate(&self, value: &str) -> bool {
         println!("field: {:?}, value: {}", &self, value);
-        match self {            
-            PassportField::Byr => if let Ok(year) = value.parse::<u32>() {
-                year >= 1920 && year <= 2002
-            } else {
-                false
-            },
-            PassportField::Iyr => if let Ok(year) = value.parse::<u32>() {
-                year >= 2010 && year <= 2020
-            } else {
-                false
-            }, 
-            PassportField::Eyr => if let Ok(year) = value.parse::<u32>() {
-                year >= 2020 && year <= 2030
-            } else {
-                false
-            },
+        match self {
+            PassportField::Byr => {
+                if let Ok(year) = value.parse::<u32>() {
+                    year >= 1920 && year <= 2002
+                } else {
+                    false
+                }
+            }
+            PassportField::Iyr => {
+                if let Ok(year) = value.parse::<u32>() {
+                    year >= 2010 && year <= 2020
+                } else {
+                    false
+                }
+            }
+            PassportField::Eyr => {
+                if let Ok(year) = value.parse::<u32>() {
+                    year >= 2020 && year <= 2030
+                } else {
+                    false
+                }
+            }
             PassportField::Hgt => {
                 let (height, unit) = value.split_at(value.len() - 2);
                 if let Ok(height) = height.parse::<u32>() {
                     match unit {
-                        "cm" => { height >= 150 && height <= 193 },
-                        "in" => { height >= 59 && height <= 76 },
-                        _ => { eprintln!("invalid unit for height field"); false },
+                        "cm" => height >= 150 && height <= 193,
+                        "in" => height >= 59 && height <= 76,
+                        _ => {
+                            eprintln!("invalid unit for height field");
+                            false
+                        }
                     }
                 } else {
                     eprintln!("invalid integer for height field");
                     false
                 }
-            },
+            }
             PassportField::Hcl => {
                 let mut chars = value.chars();
                 if let Some('#') = chars.next() {
-                    chars.take_while(|c| match c {
-                        '0'..='9' | 'a'..='f' => true,
-                        _ => false
-                    }).count() == 6
+                    chars
+                        .take_while(|c| match c {
+                            '0'..='9' | 'a'..='f' => true,
+                            _ => false,
+                        })
+                        .count()
+                        == 6
                 } else {
                     eprintln!("Hair Color field invalid because it did not start with a '#'");
                     false
                 }
             }
-            PassportField::Ecl => {
-                match value {
-                    "amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth" => true,
-                    _ => false,
-                }
-            }
+            PassportField::Ecl => match value {
+                "amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth" => true,
+                _ => false,
+            },
             PassportField::Pid => value.chars().filter(|c| c.is_numeric()).count() == 9,
             PassportField::Cid => true,
         }
@@ -119,13 +129,13 @@ impl FromStr for Passport {
                             Some(value) => {
                                 passport.insert(field, value.to_owned());
                             }
-                            None => { return Err("Missing value") },
+                            None => return Err("Missing value"),
                         }
                     } else {
-                        return Err("Unknown passport field")
+                        return Err("Unknown passport field");
                     }
-                },
-                None => { return Err("Missing Passport field") },
+                }
+                None => return Err("Missing Passport field"),
             }
         }
 
@@ -135,23 +145,34 @@ impl FromStr for Passport {
 
 #[aoc_generator(day4)]
 pub fn input_generator<'a>(input: &'a str) -> Vec<Result<Passport, &'static str>> {
-    input.split("\n\n").map(|passport| {
-        passport.parse::<Passport>()
-    }).collect::<Vec<_>>()
+    input
+        .split("\n\n")
+        .map(|passport| passport.parse::<Passport>())
+        .collect::<Vec<_>>()
 }
 
 #[aoc(day4, part1)]
 pub fn part1(passports: &Vec<Result<Passport, &'static str>>) -> usize {
-    passports.iter().filter_map(|p| p.as_ref().ok()).filter(|&p| p.validate()).count()
+    passports
+        .iter()
+        .filter_map(|p| p.as_ref().ok())
+        .filter(|&p| p.validate())
+        .count()
 }
 
 #[aoc(day4, part2)]
 pub fn part2(passports: &Vec<Result<Passport, &'static str>>) -> usize {
-    passports.iter().filter_map(|p| p.as_ref().ok()).filter(|&p| p.validate()).filter(|p| {
-        p.0.iter().filter(|(field, value)| {
-            !field.validate(value)
-        }).count() == 0
-    }).count()
+    passports
+        .iter()
+        .filter_map(|p| p.as_ref().ok())
+        .filter(|&p| p.validate())
+        .filter(|p| {
+            p.0.iter()
+                .filter(|(field, value)| !field.validate(value))
+                .count()
+                == 0
+        })
+        .count()
 }
 
 #[cfg(test)]
@@ -173,7 +194,7 @@ hgt:179cm
 hcl:#cfa07d eyr:2025 pid:166559648
 iyr:2011 ecl:brn hgt:59in";
 
-const TEST_INPUT_PART2_INVALID: &'static str = "\
+    const TEST_INPUT_PART2_INVALID: &'static str = "\
 eyr:1972 cid:100
 hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
 
@@ -188,7 +209,7 @@ hgt:59cm ecl:zzz
 eyr:2038 hcl:74454a iyr:2023
 pid:3556412378 byr:2007";
 
-const TEST_INPUT_PART2_VALID: &'static str = "\
+    const TEST_INPUT_PART2_VALID: &'static str = "\
 pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
 hcl:#623a2f
 
