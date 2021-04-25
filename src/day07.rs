@@ -163,14 +163,6 @@ dark green bags contain 2 dark blue bags.
 dark blue bags contain 2 dark violet bags.
 dark violet bags contain no other bags.";
 
-const d: &'static str = "\
-shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
-dark olive bags contain 3 faded blue bags, 4 dotted black bags.
-vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
-faded blue bags contain no other bags.
-dotted black bags contain no other bags.";
-
-
     #[test]
     fn part1_works() {
         assert_eq!(4, part1(&input_generator(TEST_INPUT_1)));

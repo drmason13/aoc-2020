@@ -154,7 +154,7 @@ mod test {
 12
 4";
 
-	fn mini_list() -> Vec<u64> {
+	fn _mini_list() -> Vec<u64> {
 		vec![4, 5, 7, 9, 10]
 	}
 

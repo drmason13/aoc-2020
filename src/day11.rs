@@ -182,7 +182,7 @@ pub fn part1(grid: &Grid) -> usize {
 }
 
 #[aoc(day11, part2)]
-pub fn part2(list: &Grid) -> Result<usize, &'static str> {
+pub fn part2(_list: &Grid) -> Result<usize, &'static str> {
 	unimplemented!("")
 }
 
