@@ -131,9 +131,9 @@ pub fn part2(graph: &BagGraph) -> usize {
             }
 
             // dbg!(&counts
-                // .iter()
-                // .map(|(idx, count)| (graph.graph()[*idx].clone(), count))
-                // .collect::<HashMap<_, _>>());
+            // .iter()
+            // .map(|(idx, count)| (graph.graph()[*idx].clone(), count))
+            // .collect::<HashMap<_, _>>());
         }
     }
     *counts.get(&idx).unwrap()
@@ -171,7 +171,7 @@ dark violet bags contain no other bags.";
     #[test]
     fn part2_works() {
         assert_eq!(126, part2(&input_generator(TEST_INPUT_2)));
-        
+
         assert_eq!(32, part2(&input_generator(TEST_INPUT_1)));
     }
 }

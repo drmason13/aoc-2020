@@ -1,4 +1,4 @@
-use aoc_runner_derive::{aoc_generator, aoc};
+use aoc_runner_derive::{aoc, aoc_generator};
 use parse_display::FromStr;
 
 use std::collections::HashSet;
@@ -19,11 +19,11 @@ struct Jump {
 
 #[derive(Clone, FromStr, PartialEq, Debug)]
 pub enum Instruction {
-    #[from_str(regex = r"acc (?P<0>[-+][0-9]+)")]
+    #[from_str(regex = "acc (?P<0>[-+][0-9]+)")]
     Acc(i32),
-    #[from_str(regex = r"jmp (?P<0>[-+][0-9]+)")]
+    #[from_str(regex = "jmp (?P<0>[-+][0-9]+)")]
     Jump(i32),
-    #[from_str(regex = r"nop (?P<0>[-+][0-9]+)")]
+    #[from_str(regex = "nop (?P<0>[-+][0-9]+)")]
     Noop(i32),
 }
 
@@ -33,14 +33,14 @@ pub enum Instruction {
 pub struct Machine {
     instruction_pointer: usize,
     accumulator: i32,
-    visited: HashSet<usize>
+    visited: HashSet<usize>,
 }
 
 /// Program stores instructions and state
 #[derive(Clone, Debug, PartialEq)]
 pub struct Program {
     instructions: Vec<Instruction>,
-    state: ProgramState
+    state: ProgramState,
 }
 
 /// Records the most recent shuffle made to the Program
@@ -81,12 +81,16 @@ impl Program {
             Some(Instruction::Jump(x)) => {
                 self.state.prev = Some(self.state.next);
                 self.instructions[self.state.next] = Instruction::Noop(*x);
-            },
+            }
             Some(Instruction::Noop(x)) => {
                 self.state.prev = Some(self.state.next);
                 self.instructions[self.state.next] = Instruction::Jump(*x);
-            },
-            Some(Instruction::Acc(_)) => {self.state.repeat = true; self.state.next += 1; self.shuffle()},
+            }
+            Some(Instruction::Acc(_)) => {
+                self.state.repeat = true;
+                self.state.next += 1;
+                self.shuffle()
+            }
         }
         self.state.next += 1;
         self.state.repeat = false;
@@ -129,7 +133,7 @@ impl Machine {
             } else {
                 // instruction has been run before...
                 // infinite loop detected - stop
-                return Err(self.accumulator)
+                return Err(self.accumulator);
             }
         }
         Ok(self.accumulator)
@@ -139,21 +143,29 @@ impl Machine {
     /// panics if the instruction pointer is set to a negative value by too large a negative jump
     fn execute(&mut self, instruction: &Instruction) {
         match instruction {
-            Instruction::Acc(x) => { self.accumulator += x; self.instruction_pointer += 1; },
-            Instruction::Jump(x) => { self.instruction_pointer = (self.instruction_pointer as i32 + x) as usize; },
-            Instruction::Noop(_) => { self.instruction_pointer += 1; },
+            Instruction::Acc(x) => {
+                self.accumulator += x;
+                self.instruction_pointer += 1;
+            }
+            Instruction::Jump(x) => {
+                self.instruction_pointer = (self.instruction_pointer as i32 + x) as usize;
+            }
+            Instruction::Noop(_) => {
+                self.instruction_pointer += 1;
+            }
         }
     }
 }
-
 
 /// This will output a Program
 #[aoc_generator(day8)]
 pub fn input_generator(input: &str) -> Program {
     Program {
-        instructions: input.lines().map(|line| {
-            line.parse::<Instruction>()
-        }).collect::<Result<_,_>>().unwrap(),
+        instructions: input
+            .lines()
+            .map(|line| line.parse::<Instruction>())
+            .collect::<Result<_, _>>()
+            .unwrap(),
         state: ProgramState {
             next: 0,
             prev: None,
@@ -207,17 +219,20 @@ acc +6";
 
     #[test]
     fn program_parsing_works() {
-        assert_eq!(vec![
-            Instruction::Noop(0),
-            Instruction::Acc(1),
-            Instruction::Jump(4),
-            Instruction::Acc(3),
-            Instruction::Jump(-3),
-            Instruction::Acc(-99),
-            Instruction::Acc(1),
-            Instruction::Jump(-4),
-            Instruction::Acc(6),
-        ], input_generator(TEST_PROGRAM).instructions);
+        assert_eq!(
+            vec![
+                Instruction::Noop(0),
+                Instruction::Acc(1),
+                Instruction::Jump(4),
+                Instruction::Acc(3),
+                Instruction::Jump(-3),
+                Instruction::Acc(-99),
+                Instruction::Acc(1),
+                Instruction::Jump(-4),
+                Instruction::Acc(6),
+            ],
+            input_generator(TEST_PROGRAM).instructions
+        );
     }
 
     #[test]

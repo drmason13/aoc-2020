@@ -1,4 +1,4 @@
-use aoc_runner_derive::{aoc_generator, aoc};
+use aoc_runner_derive::{aoc, aoc_generator};
 
 #[derive(Clone, Debug)]
 pub struct Bus {
@@ -10,13 +10,21 @@ pub struct Bus {
 pub fn input_generator(input: &str) -> (u32, Vec<Bus>) {
     let mut input = input.lines();
     let leaving_time = input.next().unwrap().trim().parse::<u32>().unwrap();
-    let buses = input.next().unwrap().split(',')
+    let buses = input
+        .next()
+        .unwrap()
+        .split(',')
         .enumerate()
         .filter_map(|(i, string)| {
-            string.parse::<u32>().ok().and_then(|id| Some(Bus { id, offset: i as u32 }))
+            string.parse::<u32>().ok().and_then(|id| {
+                Some(Bus {
+                    id,
+                    offset: i as u32,
+                })
+            })
         })
         .collect();
-    
+
     (leaving_time, buses)
 }
 
@@ -24,18 +32,20 @@ pub fn input_generator(input: &str) -> (u32, Vec<Bus>) {
 /// What is the ID of the earliest bus you can take to the airport multiplied by the number of minutes you'll need to wait for that bus?
 pub fn part1((leaving_time, buses): &(u32, Vec<Bus>)) -> Result<u32, &'static str> {
     // find the bus times that are on or after the leaving time
-    let (bus_id, wait_time) = buses.iter()
+    let (bus_id, wait_time) = buses
+        .iter()
         .cloned()
         .map(|bus| {
             let mut bus_time = bus.id;
             while bus_time < *leaving_time {
-               bus_time += bus.id;
+                bus_time += bus.id;
             }
             (bus.id, bus_time - leaving_time)
         })
-        .min_by_key(|&(_, wait_time)| wait_time).unwrap();
-    
-    Ok(bus_id * wait_time)        
+        .min_by_key(|&(_, wait_time)| wait_time)
+        .unwrap();
+
+    Ok(bus_id * wait_time)
 }
 
 #[aoc(day13, part2)]
@@ -45,8 +55,8 @@ pub fn part2((_, _buses): &(u32, Vec<Bus>)) -> Result<usize, &'static str> {
     /*
     for i in 0..buses.len() {
         let mut t = 1;
-        
-        while buses[i] 
+
+        while buses[i]
     }
     */
     unimplemented!()

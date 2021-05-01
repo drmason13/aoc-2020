@@ -1,4 +1,4 @@
-use aoc_runner_derive::{aoc_generator, aoc};
+use aoc_runner_derive::{aoc, aoc_generator};
 use std::str::FromStr;
 
 use std::collections::HashMap;
@@ -25,22 +25,26 @@ impl Mask {
     /// Return the value to write to memory after applying the mask
     fn mask_value(&self, value: u64) -> u64 {
         let binary = format!("{:036b}", value);
-        let masked_binary = binary.chars().zip(self.0.iter()).map(|(v, m)| {
-            match (v, m) {
+        let masked_binary = binary
+            .chars()
+            .zip(self.0.iter())
+            .map(|(v, m)| match (v, m) {
                 (_, MaskAction::Zero) => '0',
                 (_, MaskAction::One) => '1',
                 (v, MaskAction::X) => v,
-            }
-        }).collect::<String>();
+            })
+            .collect::<String>();
         u64::from_str_radix(&masked_binary, 2).expect("unable to parse maksed binary as integer")
     }
-    
+
     /// Return all the addresses to write to after applying the mask and accounting for "floating" bits
     fn mask_address(&self, address: u64) -> Vec<u64> {
         let binary = format!("{:036b}", address);
         let mut masked_binary_vec = vec!["".into()];
-        binary.chars().zip(self.0.iter()).for_each(|(v, m)| {
-            match (v, m) {
+        binary
+            .chars()
+            .zip(self.0.iter())
+            .for_each(|(v, m)| match (v, m) {
                 (v, MaskAction::Zero) => append_char_to_each_in_vec(v, &mut masked_binary_vec),
                 (_, MaskAction::One) => append_char_to_each_in_vec('1', &mut masked_binary_vec),
                 (_, MaskAction::X) => {
@@ -48,14 +52,16 @@ impl Mask {
                     append_char_to_each_in_vec('0', &mut masked_binary_vec);
                     append_char_to_each_in_vec('1', &mut branch);
                     masked_binary_vec.append(&mut branch);
-                },
-            }
-        });
-        
-        masked_binary_vec.iter().map(|masked_binary| {
-            u64::from_str_radix(&masked_binary, 2).expect("unable to parse maksed binary as integer")
-        }).collect()
-        
+                }
+            });
+
+        masked_binary_vec
+            .iter()
+            .map(|masked_binary| {
+                u64::from_str_radix(&masked_binary, 2)
+                    .expect("unable to parse maksed binary as integer")
+            })
+            .collect()
     }
 }
 
@@ -82,12 +88,15 @@ impl FromStr for Mask {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mask_regex = regex!("^mask = ([01X]+)$");
         let caps = mask_regex.captures(s).unwrap();
-        let mask_actions = caps[1].chars().map(|c| match c {
-            '0' => Ok(MaskAction::Zero),
-            '1' => Ok(MaskAction::One),
-            'X' => Ok(MaskAction::X),
-            _ => Err(MaskParseError("Invalid bitmask representation".into()))
-        }).collect::<Result<Vec<_>, _>>()?;
+        let mask_actions = caps[1]
+            .chars()
+            .map(|c| match c {
+                '0' => Ok(MaskAction::Zero),
+                '1' => Ok(MaskAction::One),
+                'X' => Ok(MaskAction::X),
+                _ => Err(MaskParseError("Invalid bitmask representation".into())),
+            })
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(Mask(mask_actions))
     }
 }
@@ -115,9 +124,17 @@ impl FromStr for Instruction {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let instruction_regex = regex!(r#"^mem\[(\d+)\] = (\d+)$"#);
-        let caps = instruction_regex.captures(s).ok_or(InstructionParseError(format!("invalid instruction: {}", s)))?;
-        let target = caps.get(1).unwrap().as_str().parse::<u64>().map_err(|_| InstructionParseError(format!("invalid target in instruction: {}", s)))?;
-        let value = caps.get(2).unwrap().as_str().parse::<u64>().map_err(|_| InstructionParseError(format!("invalid value in instruction: {}", s)))?;
+        let caps = instruction_regex
+            .captures(s)
+            .ok_or(InstructionParseError(format!("invalid instruction: {}", s)))?;
+        let target =
+            caps.get(1).unwrap().as_str().parse::<u64>().map_err(|_| {
+                InstructionParseError(format!("invalid target in instruction: {}", s))
+            })?;
+        let value =
+            caps.get(2).unwrap().as_str().parse::<u64>().map_err(|_| {
+                InstructionParseError(format!("invalid value in instruction: {}", s))
+            })?;
         Ok(Instruction { target, value })
     }
 }
@@ -153,13 +170,13 @@ fn parse_instruction_or_mask(s: &str) -> Result<InstructionOrMask, ParsingError>
             s.parse::<Mask>()
                 .map_err(|e| ParsingError::MaskParseError(e))
                 .map(|x| InstructionOrMask::Mask(x))
-            }
-        )
+        })
 }
 
 #[aoc_generator(day14)]
 pub fn input_generator(input: &str) -> Vec<InstructionOrMask> {
-    input.lines()
+    input
+        .lines()
         .map(|l| parse_instruction_or_mask(l))
         .collect::<Result<Vec<_>, _>>()
         .expect("failed to parse input")
@@ -174,7 +191,9 @@ pub fn part1(input: &Vec<InstructionOrMask>) -> Result<u64, &'static str> {
             InstructionOrMask::Mask(mask) => current_mask = Some(mask),
             InstructionOrMask::Instruction(instruction) => {
                 let x = memory.entry(instruction.target).or_insert(0);
-                *x = current_mask.expect("mask not initialised!").mask_value(instruction.value);
+                *x = current_mask
+                    .expect("mask not initialised!")
+                    .mask_value(instruction.value);
             }
         }
     }
@@ -190,7 +209,10 @@ pub fn part2(input: &Vec<InstructionOrMask>) -> Result<u64, &'static str> {
         match i {
             InstructionOrMask::Mask(mask) => current_mask = Some(mask),
             InstructionOrMask::Instruction(instruction) => {
-                for address in current_mask.expect("mask not initialised!").mask_address(instruction.target) {
+                for address in current_mask
+                    .expect("mask not initialised!")
+                    .mask_address(instruction.target)
+                {
                     let x = memory.entry(address).or_insert(0);
                     *x = instruction.value;
                 }
@@ -216,7 +238,6 @@ mod test {
     fn part1_works() {
         assert_eq!(165, part1(&input_generator(TEST_PROGRAM_PART1)).unwrap());
     }
-
 
     const TEST_PROGRAM_PART2: &'static str = indoc! {"
     mask = 000000000000000000000000000000X1001X

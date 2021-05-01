@@ -31,12 +31,12 @@ impl Xmas {
                     //println!("{} is a weakness", weakness);
                     self.weakness = Some(weakness);
                     self.cursor += 1;
-                },
+                }
                 Ok(_) => {
-                //Ok((a, b)) => {
+                    //Ok((a, b)) => {
                     //println!("Ok: {} + {} = {}", a, b, self.numbers.last().expect("numbers must not be empty"));
                     self.cursor += 1;
-                },
+                }
             };
         }
 
@@ -52,11 +52,11 @@ impl Xmas {
                 //println!("searching... target: {}, have: {}, need: {}", target, self.numbers[i], need);
                 if need == self.numbers[i] {
                     // exit early because now there is no way to make the target without using the same number twice (which isn't allowed)
-                    continue
+                    continue;
                 }
                 for j in (i + 1)..last_index {
                     if self.numbers[j] == need {
-                        return Ok((self.numbers[i], self.numbers[j]))
+                        return Ok((self.numbers[i], self.numbers[j]));
                     }
                 }
             } else {
@@ -73,7 +73,7 @@ impl Xmas {
     /// TODO: simple state machine to prevent misuse of the Xmas struct at compilation time
     pub fn crack(&mut self) -> Option<u64> {
         if self.encryption_weakness.is_some() {
-            return self.encryption_weakness
+            return self.encryption_weakness;
         };
 
         if let Some(weakness) = self.weakness {
@@ -98,13 +98,16 @@ impl Xmas {
                         cursor += 1;
                         if cursor - i >= 2 {
                             if sum == weakness {
-                                self.encryption_weakness = Some(smallest.expect("must have a smallest by now") + largest.expect("must have a largest by now"));
-                                return self.encryption_weakness
+                                self.encryption_weakness = Some(
+                                    smallest.expect("must have a smallest by now")
+                                        + largest.expect("must have a largest by now"),
+                                );
+                                return self.encryption_weakness;
                             }
                         }
                     } else {
                         // println!("Run out of numbers: which is _probably_ a sign something has gone wrong");
-                        break
+                        break;
                     }
                 }
             }
@@ -127,11 +130,13 @@ pub fn part1(input: &str) -> u64 {
 pub fn part1_inner(input: &str, xmas: &mut Xmas) -> Option<u64> {
     let ret = None;
     for line in input.lines() {
-        let number = line.parse::<u64>().expect("input must be positive integers");
+        let number = line
+            .parse::<u64>()
+            .expect("input must be positive integers");
         if let Some(weakness) = xmas.process(number) {
             return Some(weakness);
         };
-    };
+    }
 
     ret
 }
@@ -176,12 +181,18 @@ mod test {
     #[test]
     fn part1_works() {
         // our test case needs a different preamble length, hence using part1_inner to share the functionality
-        assert_eq!(127, part1_inner(TEST_INPUT, &mut Xmas::new(5)).expect("failed to find known weakness!"));
+        assert_eq!(
+            127,
+            part1_inner(TEST_INPUT, &mut Xmas::new(5)).expect("failed to find known weakness!")
+        );
     }
 
     #[test]
     fn part2_works() {
         // our test case needs a different preamble length, hence using part1_inner to share the functionality
-        assert_eq!(62, part2_inner(TEST_INPUT, &mut Xmas::new(5)).expect("failed to find known weakness!"));
+        assert_eq!(
+            62,
+            part2_inner(TEST_INPUT, &mut Xmas::new(5)).expect("failed to find known weakness!")
+        );
     }
 }

@@ -1,8 +1,8 @@
-use aoc_runner_derive::{aoc_generator, aoc};
+use aoc_runner_derive::{aoc, aoc_generator};
 
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
-use parse_display::{FromStr, Display};
+use parse_display::{Display, FromStr};
 
 #[derive(Clone, Debug, FromStr, Display, PartialEq)]
 pub enum Action {
@@ -156,7 +156,10 @@ struct Ship {
 
 impl Ship {
     fn _new(position: CompassCoord, direction: Direction) -> Self {
-        Ship { position, direction }
+        Ship {
+            position,
+            direction,
+        }
     }
 
     fn manhattan_distance(&self) -> usize {
@@ -198,7 +201,7 @@ impl Ship {
                     -1  0
                 */
                 Action::Left(x) => match x {
-                    0 => {},
+                    0 => {}
                     90 => *waypoint = Waypoint(CompassCoord::new(-waypoint.0.y, waypoint.0.x)),
                     180 => *waypoint = Waypoint(CompassCoord::new(-waypoint.0.x, -waypoint.0.y)),
                     270 => *waypoint = Waypoint(CompassCoord::new(waypoint.0.y, -waypoint.0.x)),
@@ -206,7 +209,7 @@ impl Ship {
                 },
                 // rotating right is just rotating left but with 90 and 270 swapped
                 Action::Right(x) => match x {
-                    0 => {},
+                    0 => {}
                     90 => *waypoint = Waypoint(CompassCoord::new(waypoint.0.y, -waypoint.0.x)),
                     180 => *waypoint = Waypoint(CompassCoord::new(-waypoint.0.x, -waypoint.0.y)),
                     270 => *waypoint = Waypoint(CompassCoord::new(-waypoint.0.y, waypoint.0.x)),
@@ -215,28 +218,31 @@ impl Ship {
             }
         } else {
             // part1 does not use a waypoint
-           match action {
-               Action::North(x) => self.position += CompassCoord::north(*x),
-               Action::East(x) => self.position += CompassCoord::east(*x),
-               Action::South(x) => self.position += CompassCoord::south(*x),
-               Action::West(x) => self.position += CompassCoord::west(*x),
-               Action::Forward(x) => match self.direction {
-                   Direction(0) => self.position += CompassCoord::north(*x),
-                   Direction(90) => self.position += CompassCoord::east(*x),
-                   Direction(180) => self.position += CompassCoord::south(*x),
-                   Direction(270) => self.position += CompassCoord::west(*x),
-                   _ => unimplemented!("non-orthognal directions not yet supported!"),
-               },
-               Action::Left(x) => self.direction -= Direction(*x),
-               Action::Right(x) => self.direction += Direction(*x),
-           }
+            match action {
+                Action::North(x) => self.position += CompassCoord::north(*x),
+                Action::East(x) => self.position += CompassCoord::east(*x),
+                Action::South(x) => self.position += CompassCoord::south(*x),
+                Action::West(x) => self.position += CompassCoord::west(*x),
+                Action::Forward(x) => match self.direction {
+                    Direction(0) => self.position += CompassCoord::north(*x),
+                    Direction(90) => self.position += CompassCoord::east(*x),
+                    Direction(180) => self.position += CompassCoord::south(*x),
+                    Direction(270) => self.position += CompassCoord::west(*x),
+                    _ => unimplemented!("non-orthognal directions not yet supported!"),
+                },
+                Action::Left(x) => self.direction -= Direction(*x),
+                Action::Right(x) => self.direction += Direction(*x),
+            }
         }
     }
 }
 
 #[aoc_generator(day12)]
 pub fn input_generator(input: &str) -> Vec<Action> {
-    input.lines().map(|line| line.parse::<Action>().expect("valid input")).collect()
+    input
+        .lines()
+        .map(|line| line.parse::<Action>().expect("valid input"))
+        .collect()
 }
 
 #[aoc(day12, part1)]
