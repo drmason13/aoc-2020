@@ -11,42 +11,70 @@ pub fn input_generator(input: &str) -> Vec<u32> {
         .expect("Failed to parse input")
 }
 
-/// The positions that each number has appeared in, sorted from lowest (first) to highest (most recently)
-type Positions = HashMap<u32, Vec<u32>>;
+/// The position that each number last appeared
+type Positions = HashMap<u32, u32>;
 
-fn starting_numbers(list: &Vec<u32>) -> (Positions, u32) {
-    assert!(list.len() > 0);
-    let mut positions: Positions = HashMap::new();
-    let mut last_inserted = 0; // we've guaranteed that this will be overwritten
-    for (i, n) in list.iter().enumerate() {
-        let x = positions.entry(*n).or_insert(Vec::new());
-        last_inserted = *n;
-        x.push((i + 1).try_into().unwrap());
+struct SpokenRecord {
+    prev: u32,
+    prev_position: u32,
+    record: Positions,
+}
+
+impl SpokenRecord {
+    fn new(list: &Vec<u32>) -> Self {
+        assert!(list.len() > 0);
+        let mut record: Positions = HashMap::new();
+
+        let mut prev: Option<u32> = None;
+        let mut prev_position: Option<u32> = None;
+
+        for (next_position, next) in list.iter().enumerate() {
+            if let Some(value) = prev {
+                let x = record.entry(value).or_default();
+                *x = (prev_position.unwrap()).try_into().unwrap();
+            }
+
+            prev = Some(*next);
+            prev_position = Some(next_position.try_into().unwrap());
+        }
+
+        SpokenRecord {
+            prev: prev.unwrap(),
+            prev_position: prev_position.unwrap().try_into().unwrap(),
+            record,
+        }
     }
-    (positions, last_inserted)
+}
+
+impl Iterator for SpokenRecord {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // work out what to speak next based on what we spoke previously
+        let speak_next = match self.record.get(&self.prev) {
+            None => 0,
+            Some(position_in_record) => self.prev_position - position_in_record,
+        };
+
+        // update the record with what we spoke previously
+        let x = self.record.entry(self.prev).or_default();
+        *x = self.prev_position;
+
+        // update what we spoke previously to what we have now just spoken
+        self.prev = speak_next;
+        self.prev_position += 1;
+
+        // return what we hath speaketh
+        Some(speak_next)
+    }
 }
 
 pub fn run(list: &Vec<u32>, limit: u32) -> u32 {
-    let (mut positions, mut last_spoken) = starting_numbers(list);
-    let mut count = list.len().try_into().unwrap();
-
-    while count < limit {
-        let last_seen_positions = positions.get(&last_spoken).unwrap();
-        let len = last_seen_positions.len();
-        last_spoken = if len < 2 {
-            // new number, so we speak 0
-            0
-        } else {
-            // repeat number, we speak the time since *the time it was previously spoken* (i.e. not immediately prior to now!)
-            let previous_position = last_seen_positions[len - 2];
-            count - previous_position
-        };
-        // record what we just spoke
-        let y = positions.entry(last_spoken).or_insert(Vec::new());
-        count += 1;
-        y.push(count);
-    }
-    last_spoken
+    let spoken_record = SpokenRecord::new(list);
+    spoken_record
+        .skip((limit as usize - 1) - list.len())
+        .next()
+        .unwrap()
 }
 
 #[aoc(day15, part1)]
@@ -65,6 +93,8 @@ mod test {
 
     #[test]
     fn part1_works() {
+        // Given the starting numbers 0,3,6, the 2020th number spoken is 436.
+        assert_eq!(436, part1(&vec![0, 3, 6]));
         // Given the starting numbers 1,3,2, the 2020th number spoken is 1.
         assert_eq!(1, part1(&vec![1, 3, 2]));
         // Given the starting numbers 2,1,3, the 2020th number spoken is 10.
@@ -80,7 +110,7 @@ mod test {
     }
 
     #[test]
-    #[ignore] // too slow ;)
+    #[ignore]
     fn part2_works() {
         // Given the starting numbers 1,3,2, the 30000000th number spoken is 2578.
         assert_eq!(2578, part2(&vec![1, 3, 2]));
