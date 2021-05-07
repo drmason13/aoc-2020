@@ -1,5 +1,8 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-use std::{collections::HashMap, ops::Range};
+use std::{
+    collections::{HashMap, HashSet},
+    ops::Range,
+};
 
 type Condition = (Range<u32>, Range<u32>);
 type Fields = HashMap<String, Condition>;
@@ -84,7 +87,63 @@ pub fn part1(input: &Notes) -> u32 {
 
 #[aoc(day16, part2)]
 pub fn part2(input: &Notes) -> u32 {
-    unimplemented!("")
+    let valid_tickets = input
+        .nearby_tickets
+        .iter()
+        .filter(|ticket| {
+            ticket.iter().all(|value| {
+                input
+                    .fields
+                    .values() // conditions
+                    .any(|(range1, range2)| range1.contains(value) || range2.contains(value))
+            })
+        })
+        .cloned()
+        .collect::<Vec<Vec<u32>>>();
+
+    // track a set of all unassigned fields, once a field is assigned it isn't tested against anymore
+    let mut unassigned_fields = HashSet::new();
+    for field in input.fields.keys() {
+        unassigned_fields.insert(field);
+    }
+
+    let mut field_assignments: HashMap<String, usize> = HashMap::new();
+
+    // loop through each position in the ticket values
+    for i in 0..input.fields.keys().len() {
+        // track which fields this position (i) cannot be
+        let mut ruled_out_fields = HashSet::new();
+        for current_ticket in &valid_tickets {
+            // rule out fields for this position using the current ticket
+            let value = current_ticket[i];
+            let ruled_out_fields_clone = ruled_out_fields.clone();
+            let contender_fields = unassigned_fields.difference(&ruled_out_fields_clone);
+
+            for &field_name in contender_fields {
+                let (range1, range2) = input.fields.get(field_name).unwrap();
+                if !(range1.contains(&value) || range2.contains(&value)) {
+                    // rule out this field
+                    ruled_out_fields.insert(field_name);
+                }
+            }
+
+            if unassigned_fields.len() - ruled_out_fields.len() == 1 {
+                // done
+                let &field_name = unassigned_fields
+                    .difference(&ruled_out_fields)
+                    .next()
+                    .unwrap();
+                // record the field and the position
+                field_assignments.insert(field_name.clone(), i);
+                dbg!(field_name);
+                break;
+            }
+        }
+    }
+
+    assert_eq!(field_assignments.keys().len(), input.fields.keys().len());
+
+    0
 }
 
 #[cfg(test)]
@@ -105,6 +164,19 @@ mod test {
         40,4,50
         55,2,20
         38,6,12"};
+
+    const TEST_INPUT_PART2: &'static str = indoc! {"
+        class: 0-1 or 4-19
+        row: 0-5 or 8-19
+        seat: 0-13 or 16-19
+        
+        your ticket:
+        11,12,13
+        
+        nearby tickets:
+        3,9,18
+        15,1,5
+        5,14,9"};
 
     #[test]
     fn notes_parsing_works() {
@@ -141,8 +213,7 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn part2_works() {
-        // assert_eq!(0, part2(&vec![2]).unwrap());
+        assert_eq!(71, part2(&input_generator(TEST_INPUT_PART2)));
     }
 }
